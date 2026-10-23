@@ -1,17 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- TargetFramework (net10.0) inherited from ..\Directory.Build.props. -->
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
+    <!-- Ported test code predates nullable; annotation context on, warnings off.
+         TODO: annotate and switch back to the inherited 'enable'. -->
+    <Nullable>annotations</Nullable>
+    <!-- #if DEBUG tests intentionally exercise library members marked [Obsolete("For
+         debugging purpose only.")]; they are the sanctioned callers, so don't warn here. -->
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
-    <PackageReference Include="PdfPig" Version="0.1.5" />
-    <PackageReference Include="xunit" Version="2.4.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
-    <PackageReference Include="coverlet.collector" Version="1.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="PdfPig" Version="0.1.14" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1" />
+    <PackageReference Include="coverlet.collector" Version="10.1.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,6 +4,8 @@ using System.Linq;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
 using Xunit;
+// Disambiguate the Stream parser from System.IO.Stream (pulled in by ImplicitUsings).
+using Stream = Camelot.Parsers.Stream;
 
 namespace Camelot.Tests
 {

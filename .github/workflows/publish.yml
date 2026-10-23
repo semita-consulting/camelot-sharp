@@ -1,0 +1,124 @@
+name: Build & Publish Packages
+
+# Release-driven: push a version tag (e.g. v1.0.1) to build, test, pack, and publish both
+# packages to GitHub Packages -- Camelot and Camelot.ImageProcessing.OpenCvSharp4. The tag's
+# version (minus the leading 'v') is stamped on every package. workflow_dispatch is available
+# for manual/dry runs.
+#
+# This repo is small (two library projects, a fast build), so -- unlike the EdiLoom publish
+# workflow it is modelled on -- the gate, pack, and publish steps all live in a single job.
+# Only the prune job runs separately.
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to stamp (blank = use csproj versions)"
+        required: false
+        default: ""
+      publish:
+        description: "Push to GitHub Packages"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  CONFIG: Release
+  SOLUTION: camelot-sharp.sln
+  CAMELOT: Camelot/Camelot.csproj
+  OPENCV: Camelot.ImageProcessing.OpenCvSharp4/Camelot.ImageProcessing.OpenCvSharp4.csproj
+
+jobs:
+  build-pack-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      # Single source of truth for the stamped version: tag push -> strip leading 'v';
+      # manual run -> use the input (also tolerating a leading 'v'). Empty => csproj Version.
+      - name: Resolve version
+        id: ver
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            V="${GITHUB_REF_NAME#v}"          # v1.0.1 -> 1.0.1
+          else
+            V="${{ inputs.version }}"
+            V="${V#v}"
+          fi
+          echo "version=$V"
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          if [ -n "$V" ]; then echo "arg=-p:Version=$V" >> "$GITHUB_OUTPUT"; else echo "arg=" >> "$GITHUB_OUTPUT"; fi
+
+      # Gate: build + run the full test suite before anything is packed, so a regression
+      # fails the release before it publishes. The whole solution is cheap to build.
+      - name: Build & test (gate)
+        run: dotnet test "$SOLUTION" -c "$CONFIG" --logger "console;verbosity=minimal" /clp:ErrorsOnly
+
+      # Pack both library projects. OpenCvSharp4 references Camelot via ProjectReference, so
+      # NuGet records Camelot as a package dependency on the OpenCvSharp4 package automatically.
+      - name: Pack Camelot
+        run: dotnet pack "$CAMELOT" -c "$CONFIG" -o "${{ github.workspace }}/artifacts" ${{ steps.ver.outputs.arg }} /clp:ErrorsOnly
+      - name: Pack Camelot.ImageProcessing.OpenCvSharp4
+        run: dotnet pack "$OPENCV" -c "$CONFIG" -o "${{ github.workspace }}/artifacts" ${{ steps.ver.outputs.arg }} /clp:ErrorsOnly
+
+      # Push straight to GitHub Packages. --skip-duplicate no-ops an identical re-push, so a
+      # re-tag after a red run safely completes the set.
+      - name: Publish to GitHub Packages
+        if: ${{ github.event_name == 'push' || inputs.publish }}
+        shell: bash
+        run: |
+          dotnet nuget add source \
+            --username semita-consulting \
+            --password "${{ secrets.GITHUB_TOKEN }}" \
+            --store-password-in-clear-text \
+            --name github \
+            "https://nuget.pkg.github.com/semita-consulting/index.json"
+          dotnet nuget push "${{ github.workspace }}/artifacts/*.nupkg" \
+            --source github \
+            --api-key "${{ secrets.GITHUB_TOKEN }}" \
+            --skip-duplicate
+
+  # Retention: GitHub Packages has no built-in "keep N versions" policy and the org has a
+  # 2 GB package-storage cap. After a successful publish, keep only the latest 3 versions of
+  # each package and delete the rest.
+  prune:
+    needs: build-pack-publish
+    if: ${{ github.event_name == 'push' || inputs.publish }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - Camelot
+          - Camelot.ImageProcessing.OpenCvSharp4
+    steps:
+      - name: Keep only the latest 3 versions of ${{ matrix.package }}
+        uses: actions/delete-package-versions@v5
+        continue-on-error: true   # a package not yet published (first run) is not an error
+        with:
+          owner: semita-consulting
+          package-name: ${{ matrix.package }}
+          package-type: nuget
+          min-versions-to-keep: 3
+          # GITHUB_TOKEN (packages: write) can prune packages linked to this repo.
+          # If it 403s on the org feed, supply a PAT with delete:packages:
+          #   token: ${{ secrets.PACKAGES_DELETE_PAT }}

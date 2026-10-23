@@ -142,7 +142,6 @@ namespace Camelot.Parsers
         /// <para>For more information, refer `OpenCV's dilate https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#dilate`.</para></param>
         /// <param name="resolution">Resolution used for PDF to PNG conversion.</param>
         /// <param name="log"></param>
-        /// <param name="kwargs"></param>
         public Lattice(IImageProcesser imageProcesser,
                        IPageImageRenderer pageImageRenderer,
                        List<(float x1, float y1, float x2, float y2)> table_regions = null,
@@ -427,7 +426,7 @@ namespace Camelot.Parsers
             return table;
         }
 
-        public override List<Table> ExtractTables(Page page, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
+        public override List<Table> ExtractTables(Page page, bool suppress_stdout = false, params IDlaOptions[] layout_kwargs)
         {
             GenerateLayout(page, layout_kwargs);
             var base_filename = Path.GetFileName(RootName);

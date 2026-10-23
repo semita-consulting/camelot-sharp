@@ -1,17 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- TargetFramework (net10.0), Nullable, ImplicitUsings and LangVersion come from
+       ..\Directory.Build.props (Semita internal standard). -->
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;netstandard2.0;netstandard2.1;net452;net46;net461;net462;net47;net5.0;net6.0</TargetFrameworks>
-    <Authors>BobLd</Authors>
-    <Version>0.0.1-alpha003</Version>
+    <Authors>Semita Consulting</Authors>
+    <Company>Semita Consulting</Company>
+    <Version>1.0.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Description>A C# library to extract tabular data from PDFs (port of camelot Python version using PdfPig).</Description>
+    <Description>A C# library to extract tabular data from PDFs (port of camelot Python version using PdfPig). Forked and maintained by Semita Consulting; original work by BobLd.</Description>
     <PackageTags>pdf, extract, table, camelot, pdfpig, parse, extraction, export</PackageTags>
-    <RepositoryUrl>https://github.com/BobLd/camelot-sharp</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/BobLd/camelot-sharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/semita-consulting/camelot-sharp</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/semita-consulting/camelot-sharp</PackageProjectUrl>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <!-- This ported code predates nullable reference types. Use 'annotations' (annotation
+         context on for consumers, nullable warnings off) rather than the standard 'enable'
+         until the port is properly annotated. TODO: annotate and switch back to enable. -->
+    <Nullable>annotations</Nullable>
+    <!-- Ship XML docs but don't fail CI over members the upstream fork never documented. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="PdfPig" Version="0.1.5" />
+    <PackageReference Include="PdfPig" Version="0.1.14" />
   </ItemGroup>
 
 </Project>

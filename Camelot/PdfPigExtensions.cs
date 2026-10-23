@@ -75,22 +75,22 @@ namespace Camelot
         /// <summary>
         /// BottomLeft.X = Left
         /// </summary>
-        public static float X0(this Letter letter) => letter.GlyphRectangle.X0();
+        public static float X0(this Letter letter) => letter.BoundingBox.X0();
 
         /// <summary>
         /// BottomLeft.Y = Bottom
         /// </summary>
-        public static float Y0(this Letter letter) => letter.GlyphRectangle.Y0();
+        public static float Y0(this Letter letter) => letter.BoundingBox.Y0();
 
         /// <summary>
         /// TopRight.X = Right
         /// </summary>
-        public static float X1(this Letter letter) => letter.GlyphRectangle.X1();
+        public static float X1(this Letter letter) => letter.BoundingBox.X1();
 
         /// <summary>
         /// TopRight.Y = Top
         /// </summary>
-        public static float Y1(this Letter letter) => letter.GlyphRectangle.Y1();
+        public static float Y1(this Letter letter) => letter.BoundingBox.Y1();
 
         /// <summary>
         /// Returns True if two characters can coexist in the same line.

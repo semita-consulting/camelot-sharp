@@ -33,10 +33,12 @@ namespace Camelot.Tests
                     {
                         new Letter(text,
                                    new PdfRectangle(x0, y0, x1, y1),
+                                   new PdfRectangle(x0, y0, x1, y1),
                                    new PdfPoint(x0, y0),
                                    new PdfPoint(x1, y0),
                                    1, 1, new FontDetails(string.Empty, false, 1, false),
-                                   RGBColor.Black, 1, -1)
+                                   TextRenderingMode.Fill,
+                                   RGBColor.Black, RGBColor.Black, 1, -1)
                     })
                 });
         }

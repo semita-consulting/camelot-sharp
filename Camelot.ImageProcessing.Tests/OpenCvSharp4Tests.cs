@@ -1,7 +1,6 @@
 using Camelot.ImageProcessing.OpenCvSharp4;
 using OpenCvSharp;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using UglyToad.PdfPig;
@@ -43,9 +42,8 @@ namespace Camelot.ImageProcessing.Tests
             Assert.Equal(new int[] { 794, 596 }, Shape(threshold));
 
             using (var ms = threshold.ToMemoryStream())
-            using (var th = (Bitmap)Image.FromStream(ms))
             {
-                th.Save("Files/Output/PMC5055614_00002_threshold.png");
+                File.WriteAllBytes("Files/Output/PMC5055614_00002_threshold.png", ms.ToArray());
             }
 
             (var img_bg, var threshold_bg) = _imageProcessing.AdaptiveThreshold(imagePath, true);
@@ -53,9 +51,8 @@ namespace Camelot.ImageProcessing.Tests
             Assert.Equal(new int[] { 794, 596 }, Shape(threshold_bg));
 
             using (var ms = threshold_bg.ToMemoryStream())
-            using (var th = (Bitmap)Image.FromStream(ms))
             {
-                th.Save("Files/Output/PMC5055614_00002_threshold_bg.png");
+                File.WriteAllBytes("Files/Output/PMC5055614_00002_threshold_bg.png", ms.ToArray());
             }
 
             img.Dispose();
@@ -419,11 +416,11 @@ namespace Camelot.ImageProcessing.Tests
             {
                 var page = document.GetPage(1);
 
-                (var table_bbox, var vertical_segments, var horizontal_segments) = _imageProcessing.Process(page, new BasicSystemDrawingProcessor(), false, 15, -2, 15, 0, null, null); //, out var table_bbox_unscaled);
+                (var table_bbox, var vertical_segments, var horizontal_segments) = _imageProcessing.Process(page, new SkiaImageProcessor(document), false, 15, -2, 15, 0, null, null); //, out var table_bbox_unscaled);
 
                 Assert.Single(table_bbox);
                 Assert.Equal(new[] { (120.0f, 116.66666666666666f, 492.0f, 234.33333333333331f) }.ToList(), table_bbox.Keys.ToList(), new TestHelper.ListTuple4EqualityComparer(0));
-                Assert.Equal(52, table_bbox.Values.First().Count); // should be 57, difference comes from rendering
+                Assert.Equal(53, table_bbox.Values.First().Count); // should be 57, difference comes from rendering (53 with the Skia renderer; was 52 under System.Drawing)
 
                 var vertical_segments_expected = new List<(float, float, float, float)>()
                 {
@@ -442,11 +439,11 @@ namespace Camelot.ImageProcessing.Tests
                 var horizontal_segments_expected = new List<(float, float, float, float)>()
                 {
                     (120.33333333333333f, 117.33333333333333f, 492.0f, 117.33333333333333f),
-                    (120.66f, 133.0f, 492.0f, 133.0f),                               // (120.3333333333333f, 133.0f, 492.0f, 133.0f),
-                    (120.66f, 148.33333333333331f, 492.0f, 148.33333333333331f),    // (120.33333333333333f, 148.33333333333331f, 492.0f, 148.33333333333331f),
-                    (120.66f, 164.0f, 492.0f, 164.0f),                              // (120.33333333333333f, 164.0f, 492.0f, 164.0f),
-                    (120.66f, 179.33333333333331f, 492.0f, 179.33333333333331f),    // (120.33333333333333f, 179.33333333333331f, 492.0f, 179.33333333333331f),
-                    (120.66f, 195.0f, 492.0f, 195.0f),                              // (120.33333333333333f, 195.0f, 492.0f, 195.0f),
+                    (120.33333333333333f,133.0f, 492.0f, 133.0f),                               // (120.3333333333333f, 133.0f, 492.0f, 133.0f),
+                    (120.33333333333333f,148.33333333333331f, 492.0f, 148.33333333333331f),    // (120.33333333333333f, 148.33333333333331f, 492.0f, 148.33333333333331f),
+                    (120.33333333333333f,164.0f, 492.0f, 164.0f),                              // (120.33333333333333f, 164.0f, 492.0f, 164.0f),
+                    (120.33333333333333f,179.33333333333331f, 492.0f, 179.33333333333331f),    // (120.33333333333333f, 179.33333333333331f, 492.0f, 179.33333333333331f),
+                    (120.66667f, 195.0f, 492.0f, 195.0f),                           // Skia keeps this row at 120.66 (most other rows render at 120.33)
                     (257.66666666666663f, 218.33333333333331f, 492.0f, 218.33333333333331f),
                     (120.33333333333333f, 234.0f, 492.0f, 234.0f)                               // (120.33333333333333f, 234.0f, 492.0f, 234.0f)
                 };

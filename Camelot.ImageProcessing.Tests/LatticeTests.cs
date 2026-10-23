@@ -15,11 +15,11 @@ namespace Camelot.ImageProcessing.Tests
         {
             using (var doc = PdfDocument.Open("Files/foo.pdf", new ParsingOptions() { ClipPaths = true }))
             {
-                var lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor());
+                var lattice = new Lattice(new OpenCvImageProcesser(), new SkiaImageProcessor(doc));
                 var tables = lattice.ExtractTables(doc.GetPage(1), layout_kwargs: null);
                 Assert.Single(tables);
                 Assert.Equal((7, 7), tables[0].Shape);
-                Assert.Equal("<Cell x1=120.33 y1=218.33 x2=164.67 y2=234.01>", tables[0].Cells[0][0].ToString()); // "<Cell x1=120.48 y1=218.43 x2=164.64 y2=233.77>" in Python
+                Assert.Equal("<Cell x1=120.33 y1=218.67 x2=164.67 y2=234.01>", tables[0].Cells[0][0].ToString()); // "<Cell x1=120.48 y1=218.43 x2=164.64 y2=233.77>" in Python; y1 was 218.33 under System.Drawing, 218.67 with the Skia renderer
             }
         }
 
@@ -156,9 +156,9 @@ namespace Camelot.ImageProcessing.Tests
             {
                 var page = doc.GetPage(1);
 
-                var lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40);
+                var lattice = new Lattice(new OpenCvImageProcesser(), new SkiaImageProcessor(doc), line_scale: 40);
                 var tables = lattice.ExtractTables(page,
-                    layout_kwargs: new DlaOptions[]
+                    layout_kwargs: new IDlaOptions[]
                     {
                         new DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions()
                         {
@@ -169,9 +169,9 @@ namespace Camelot.ImageProcessing.Tests
                 Assert.Equal(DataLatticeShiftTextLeftTop.Length, tables[0].Cells.Count);
                 Assert.Equal(DataLatticeShiftTextLeftTop, tables[0].Data().Select(r => r.Select(c => c).ToArray()).ToArray());
 
-                lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40, shift_text: new[] { "" });
+                lattice = new Lattice(new OpenCvImageProcesser(), new SkiaImageProcessor(doc), line_scale: 40, shift_text: new[] { "" });
                 tables = lattice.ExtractTables(page,
-                    layout_kwargs: new DlaOptions[]
+                    layout_kwargs: new IDlaOptions[]
                     {
                         new DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions()
                         {
@@ -182,9 +182,9 @@ namespace Camelot.ImageProcessing.Tests
                 Assert.Equal(DataLatticeShiftTextDisable.Length, tables[0].Cells.Count);
                 Assert.Equal(DataLatticeShiftTextDisable, tables[0].Data().Select(r => r.Select(c => c).ToArray()).ToArray());
 
-                lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40, shift_text: new[] { "r", "b" });
+                lattice = new Lattice(new OpenCvImageProcesser(), new SkiaImageProcessor(doc), line_scale: 40, shift_text: new[] { "r", "b" });
                 tables = lattice.ExtractTables(page,
-                    layout_kwargs: new DlaOptions[]
+                    layout_kwargs: new IDlaOptions[]
                     {
                         new DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions()
                         {

@@ -14,8 +14,14 @@ namespace Camelot.LayoutExtractor
         /// <summary>
         /// Parameters for layout analysis
         /// </summary>
-        public class LAParams : DlaOptions
+        public class LAParams : IDlaOptions
         {
+            /// <summary>
+            /// Maximum degree of parallelism used by layout analysis (IDlaOptions).
+            /// -1 lets the runtime decide; matches PdfPig's default behaviour.
+            /// </summary>
+            public int MaxDegreeOfParallelism { get; set; } = -1;
+
             /// <summary>
             /// If two characters have more overlap than this they
             /// are considered to be on the same line.The overlap is specified
@@ -95,8 +101,8 @@ namespace Camelot.LayoutExtractor
                     //          |<--->|
                     //        (char_margin)
                     var halign = obj0.is_compatible(obj1) && obj0.is_voverlap(obj1) &&
-                        Math.Min(obj0.GlyphRectangle.Height, obj1.GlyphRectangle.Height) * laparams.line_overlap < obj0.voverlap(obj1) &&
-                        obj0.hdistance(obj1) < Math.Max(obj0.GlyphRectangle.Width, obj1.GlyphRectangle.Width) * laparams.char_margin;
+                        Math.Min(obj0.BoundingBox.Height, obj1.BoundingBox.Height) * laparams.line_overlap < obj0.voverlap(obj1) &&
+                        obj0.hdistance(obj1) < Math.Max(obj0.BoundingBox.Width, obj1.BoundingBox.Width) * laparams.char_margin;
 
                     // valign: obj0 and obj1 is vertically aligned.
                     //
@@ -113,8 +119,8 @@ namespace Camelot.LayoutExtractor
                     //     |<-->|
                     //   (line_overlap)
                     var valign = laparams.detect_vertical && obj0.is_compatible(obj1) && obj0.is_hoverlap(obj1) &&
-                        Math.Min(obj0.GlyphRectangle.Width, obj1.GlyphRectangle.Width) * laparams.line_overlap < obj0.hoverlap(obj1) &&
-                        obj0.vdistance(obj1) < Math.Max(obj0.GlyphRectangle.Height, obj1.GlyphRectangle.Height) * laparams.char_margin;
+                        Math.Min(obj0.BoundingBox.Width, obj1.BoundingBox.Width) * laparams.line_overlap < obj0.hoverlap(obj1) &&
+                        obj0.vdistance(obj1) < Math.Max(obj0.BoundingBox.Height, obj1.BoundingBox.Height) * laparams.char_margin;
 
                     if ((halign && lineIsHorizontal) || (valign && lineIsVertical))
                     {
@@ -194,6 +200,7 @@ namespace Camelot.LayoutExtractor
         /// <summary>
         /// https://github.com/pdfminer/pdfminer.six/blob/f389b97923c7a847bc9c6f4c3374951e1a7ff764/pdfminer/layout.py#L786
         /// </summary>
+        /// <param name="page"></param>
         /// <param name="laparams"></param>
         public void analyze(Page page, LAParams laparams)
         {
