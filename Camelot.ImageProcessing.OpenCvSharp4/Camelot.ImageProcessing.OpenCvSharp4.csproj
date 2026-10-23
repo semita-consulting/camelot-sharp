@@ -1,14 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- TargetFramework (net10.0), Nullable, ImplicitUsings and LangVersion come from
+       ..\Directory.Build.props (Semita internal standard). -->
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;netstandard2.0;netstandard2.1;net461;net462;net47;net5.0;net6.0</TargetFrameworks>
-    <PackageTags>pdf, extract, table, camelot, pdfpig, parse, extraction, export, opencv, image</PackageTags>
+    <PackageTags>pdf, extract, table, camelot, pdfpig, parse, extraction, export, opencv, image, skia</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Authors>BobLd</Authors>
-    <Version>0.0.1-alpha003</Version>
-    <Description>A C# library to extract tabular data from PDFs (port of camelot Python version using PdfPig). Contains OpenCvSharp4 for image processing used in the Lattice parser.</Description>
-    <PackageProjectUrl>https://github.com/BobLd/camelot-sharp</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/BobLd/camelot-sharp</RepositoryUrl>
+    <Authors>Semita Consulting</Authors>
+    <Company>Semita Consulting</Company>
+    <Version>1.0.0</Version>
+    <Description>A C# library to extract tabular data from PDFs (port of camelot Python version using PdfPig). Contains OpenCvSharp4 for image processing used in the Lattice parser, with cross-platform page rendering via PdfPig.Rendering.Skia. Forked and maintained by Semita Consulting; original work by BobLd.</Description>
+    <PackageProjectUrl>https://github.com/semita-consulting/camelot-sharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/semita-consulting/camelot-sharp</RepositoryUrl>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -22,12 +24,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenCvSharp4" Version="4.5.5.20211231" />
-    <PackageReference Include="OpenCvSharp4.runtime.osx.10.15-x64" Version="4.5.5.20211231" />
-    <PackageReference Include="OpenCvSharp4.runtime.ubuntu.18.04-x64" Version="4.5.5.20211231" />
-    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.5.5.20211231" />
-    <PackageReference Include="PdfPig" Version="0.1.5" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260627" />
+    <!-- Native OpenCV runtimes: Windows for local dev, Linux for our hosted services. -->
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260627" />
+    <PackageReference Include="OpenCvSharp4.official.runtime.linux-x64" Version="4.13.0.20260627" />
+    <PackageReference Include="PdfPig" Version="0.1.14" />
+    <!-- Cross-platform page rendering (replaces the Windows-only System.Drawing path).
+         Pinned to the 0.1.14.x build that pairs with PdfPig 0.1.14 (same version used in Maestro). -->
+    <PackageReference Include="PdfPig.Rendering.Skia" Version="0.1.14.2" />
+    <!-- SkiaSharp native binaries for headless Linux hosts (no GL/font system deps). -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.1" />
   </ItemGroup>
 
   <ItemGroup>

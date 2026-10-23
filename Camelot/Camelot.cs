@@ -5,6 +5,8 @@ using System.Linq;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
 using static Camelot.Core;
+// Disambiguate the Stream parser from System.IO.Stream (pulled in by ImplicitUsings).
+using Stream = Camelot.Parsers.Stream;
 
 namespace Camelot
 {
@@ -25,7 +27,7 @@ namespace Camelot
             string password = null,
             string flavor = "lattice",
             bool suppress_stdout = false,
-            params DlaOptions[] layout_kwargs)
+            params IDlaOptions[] layout_kwargs)
         {
             if (flavor != "lattice" && flavor != "stream")
             {
@@ -73,7 +75,7 @@ namespace Camelot
         /// <param name="suppress_stdout">Suppress logs and warnings.</param>
         /// <param name="layout_kwargs"></param>
         /// <returns></returns>
-        public TableList Parse(string flavor = "lattice", bool suppress_stdout = false, params DlaOptions[] layout_kwargs) //, **kwargs)
+        public TableList Parse(string flavor = "lattice", bool suppress_stdout = false, params IDlaOptions[] layout_kwargs) //, **kwargs)
         {
             var tables = new List<Table>();
             BaseParser parser;

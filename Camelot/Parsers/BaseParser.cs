@@ -30,7 +30,7 @@ namespace Camelot.Parsers
 
         public string FileName { get; protected set; }
 
-        public DlaOptions[] LayoutOptions { get; protected set; }
+        public IDlaOptions[] LayoutOptions { get; protected set; }
 
         public Page Layout { get; protected set; }
 
@@ -49,7 +49,7 @@ namespace Camelot.Parsers
         public string RootName { get; protected set; }
 
         /*
-        public void GenerateLayout(string filename, params DlaOptions[] layout_kwargs)
+        public void GenerateLayout(string filename, params IDlaOptions[] layout_kwargs)
         {
             FileName = filename;
             using (PdfDocument document = PdfDocument.Open(filename, new ParsingOptions() { ClipPaths = true, Logger = log }))
@@ -59,7 +59,7 @@ namespace Camelot.Parsers
         }
         */
 
-        public void GenerateLayout(Page page, params DlaOptions[] layout_kwargs)
+        public void GenerateLayout(Page page, params IDlaOptions[] layout_kwargs)
         {
             LayoutOptions = layout_kwargs;
             Layout = page;
@@ -70,7 +70,7 @@ namespace Camelot.Parsers
                 {
                     Images.Add(png);
                 }
-                else if (img.TryGetBytes(out var bytes))
+                else if (img.TryGetBytesAsMemory(out var bytes))
                 {
                     Images.Add(bytes.ToArray());
                 }
@@ -81,18 +81,20 @@ namespace Camelot.Parsers
             }
 
             // get texts
-            var nnweOptions = layout_kwargs?.Where(o => o is NearestNeighbourWordExtractor.NearestNeighbourWordExtractorOptions)?.FirstOrDefault();
-            var words = nnweOptions == null ? NearestNeighbourWordExtractor.Instance.GetWords(page.Letters) : NearestNeighbourWordExtractor.Instance.GetWords(page.Letters, nnweOptions);
+            // PdfPig 0.1.14 moved the options from the GetWords/GetBlocks calls onto the
+            // extractor/segmenter constructors, so configure the instance then extract.
+            var nnweOptions = layout_kwargs?.OfType<NearestNeighbourWordExtractor.NearestNeighbourWordExtractorOptions>().FirstOrDefault();
+            var wordExtractor = nnweOptions == null
+                ? NearestNeighbourWordExtractor.Instance
+                : new NearestNeighbourWordExtractor(nnweOptions);
+            var words = wordExtractor.GetWords(page.Letters);
 
-            var dbbOptions = layout_kwargs?.Where(o => o is DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions)?.FirstOrDefault();
-            if (dbbOptions == null)
-            {
-                dbbOptions = new DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions()
+            var dbbOptions = layout_kwargs?.OfType<DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions>().FirstOrDefault()
+                ?? new DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions()
                 {
-                     WithinLineMultiplier = 2,
+                    WithinLineMultiplier = 2,
                 };
-            }
-            var blocks = dbbOptions == null ? DocstrumBoundingBoxes.Instance.GetBlocks(words) : DocstrumBoundingBoxes.Instance.GetBlocks(words, dbbOptions);
+            var blocks = new DocstrumBoundingBoxes(dbbOptions).GetBlocks(words);
 
             // horizontal text: normal and rotated 180
             HorizontalText = blocks.SelectMany(b => b.TextLines.Where(tl => tl.TextOrientation == TextOrientation.Horizontal || tl.TextOrientation == TextOrientation.Rotate180)).ToList();
@@ -107,6 +109,6 @@ namespace Camelot.Parsers
             RootName = Path.GetFileNameWithoutExtension(FileName);
         }
 
-        public abstract List<Table> ExtractTables(Page page, bool suppress_stdout = false, params DlaOptions[] layout_kwargs);
+        public abstract List<Table> ExtractTables(Page page, bool suppress_stdout = false, params IDlaOptions[] layout_kwargs);
     }
 }

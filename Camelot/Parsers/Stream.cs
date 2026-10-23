@@ -484,7 +484,7 @@ namespace Camelot.Parsers
             return table;
         }
 
-        public override List<Table> ExtractTables(Page page, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
+        public override List<Table> ExtractTables(Page page, bool suppress_stdout = false, params IDlaOptions[] layout_kwargs)
         {
             GenerateLayout(page, layout_kwargs);
             var base_filename = Path.GetFileName(RootName); //os.path.basename(self.rootname)

@@ -14,8 +14,14 @@ namespace Camelot.LayoutExtractor
         /// <summary>
         /// Parameters for layout analysis
         /// </summary>
-        public class LAParams : DlaOptions
+        public class LAParams : IDlaOptions
         {
+            /// <summary>
+            /// Maximum degree of parallelism used by layout analysis (IDlaOptions).
+            /// -1 lets the runtime decide; matches PdfPig's default behaviour.
+            /// </summary>
+            public int MaxDegreeOfParallelism { get; set; } = -1;
+
             /// <summary>
             /// If two characters have more overlap than this they
             /// are considered to be on the same line.The overlap is specified

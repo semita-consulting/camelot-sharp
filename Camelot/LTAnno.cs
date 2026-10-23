@@ -12,7 +12,8 @@ namespace Camelot
     internal class LTAnno : Letter
     {
         public LTAnno(string value)
-            : base(value, new PdfRectangle(), new PdfPoint(), new PdfPoint(), 0, 0, null, null, 0, -1)
+            : base(value, new PdfRectangle(), new PdfRectangle(), new PdfPoint(), new PdfPoint(), 0, 0,
+                   (UglyToad.PdfPig.PdfFonts.IFont)null, TextRenderingMode.Fill, null, null, 0, -1)
         { }
     }
 }
