@@ -512,6 +512,7 @@ namespace Camelot
         /// if its size is different from rest of the string. (Useful for super and subscripts)</param>
         /// <param name="strip_text">Characters that should be stripped from a string before
         /// assigning it to a cell.</param>
+        /// <param name="log">Optional logger.</param>
         /// <returns>indices : list - List of tuples of the form (r_idx, c_idx, text) where r_idx and c_idx are row and column indices.
         /// <para>float - Assignment error, percentage of text area that lies outside a cell.</para>
         /// <para>+-------+</para>

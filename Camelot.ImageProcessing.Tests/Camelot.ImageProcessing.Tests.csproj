@@ -3,6 +3,9 @@
   <!-- TargetFramework (net10.0) inherited from ..\Directory.Build.props. -->
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+    <!-- Ported test code predates nullable; annotation context on, warnings off.
+         TODO: annotate and switch back to the inherited 'enable'. -->
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

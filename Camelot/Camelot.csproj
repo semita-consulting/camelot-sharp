@@ -14,6 +14,12 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <!-- This ported code predates nullable reference types. Use 'annotations' (annotation
+         context on for consumers, nullable warnings off) rather than the standard 'enable'
+         until the port is properly annotated. TODO: annotate and switch back to enable. -->
+    <Nullable>annotations</Nullable>
+    <!-- Ship XML docs but don't fail CI over members the upstream fork never documented. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
